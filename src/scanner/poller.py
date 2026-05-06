@@ -19,7 +19,7 @@ from src.scanner.state import transition_state
 def fetch_active_markets() -> list:
     """Fetch active markets from Gamma API."""
     try:
-        url = f"{config.GAMMA_API_BASE}/events"
+        url = f"{config.GAMMA_API_BASE}/markets"
         params = {"active": "true", "closed": "false", "limit": config.MARKETS_PAGE_SIZE}
         resp = requests.get(url, params=params, timeout=10)
         resp.raise_for_status()
@@ -90,9 +90,33 @@ def poll_all_markets() -> None:
                     
                     # 4. If yes, poll CLOB/price data, run detector, update state
                     current_price = 0.5
-                    tokens = market.get("tokens", [])
-                    if tokens and isinstance(tokens, list) and len(tokens) > 0:
-                        current_price = float(tokens[0].get("price", current_price))
+                    outcome_prices = market.get("outcomePrices", [])
+                    outcomes = market.get("outcomes", [])
+                    
+                    import json
+                    if isinstance(outcome_prices, str):
+                        try:
+                            outcome_prices = json.loads(outcome_prices)
+                        except:
+                            outcome_prices = []
+                    if isinstance(outcomes, str):
+                        try:
+                            outcomes = json.loads(outcomes)
+                        except:
+                            outcomes = []
+                            
+                    if outcome_prices and isinstance(outcome_prices, list) and len(outcome_prices) > 0:
+                        idx = 0
+                        if isinstance(outcomes, list):
+                            for i, o in enumerate(outcomes):
+                                if isinstance(o, str) and o.lower() == "yes":
+                                    idx = i
+                                    break
+                        if idx < len(outcome_prices):
+                            try:
+                                current_price = float(outcome_prices[idx])
+                            except ValueError:
+                                pass
                         
                     prev_price = db_state.get("current_price", current_price) if db_state else current_price
                     prev_volume_avg = db_state.get("rolling_volume_avg", 500.0) if db_state else 500.0

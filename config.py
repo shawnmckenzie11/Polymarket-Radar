@@ -34,7 +34,7 @@ CATEGORIES_TO_SCAN = None  # Options: "Politics", "Crypto", "Economics", "Sports
 # ============================================================================
 
 # COLD markets: wide, infrequent scan
-POLL_INTERVAL_COLD = 4 * 60 * 60  # 4 hours
+POLL_INTERVAL_COLD = 10  # 10 seconds for troubleshooting
 
 # WARM markets: elevated attention
 POLL_INTERVAL_WARM = 5 * 60  # 5 minutes
@@ -69,7 +69,7 @@ DB_PATH = os.getenv("POLYMARKET_DB_PATH", "polymarket_radar.db")
 # ============================================================================
 
 # Set to True to print detailed polling info
-VERBOSE_POLLING = False
+VERBOSE_POLLING = True
 
 # ============================================================================
 # Phase 1: Analyzer Configuration
