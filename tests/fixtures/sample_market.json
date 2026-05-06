@@ -1,0 +1,12 @@
+{
+  "id": "0x12345...",
+  "condition_id": "0x12345...",
+  "question": "Will Bitcoin exceed $100,000 by end of 2025?",
+  "category": "Crypto",
+  "end_date": "2025-12-31T23:59:59Z",
+  "closed": false,
+  "yes_price": 0.72,
+  "no_price": 0.28,
+  "volume_24h": 150000.0,
+  "liquidity": 50000.0
+}
