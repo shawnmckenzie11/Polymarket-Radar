@@ -16,23 +16,33 @@ def upsert_market(
     category: str,
     question: str,
     current_price: float,
+    rolling_volume_avg: float,
+    consecutive_no_blip_polls: int,
     end_date: str,
     state: str,
+    last_polled_at: str,
 ) -> None:
     """
     Upsert a market record (INSERT ... ON CONFLICT DO UPDATE).
-
-    Args:
-        conn: Database connection.
-        condition_id: Market identifier.
-        category: Market category (Politics, Crypto, etc.).
-        question: Full market question text.
-        current_price: Current YES-token price.
-        end_date: ISO8601 market close time.
-        state: Current state (COLD, WARM, HOT, RESOLVED).
     """
-    # TODO: Implement upsert
-    pass
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO markets (
+            condition_id, category, question, current_price, rolling_volume_avg,
+            consecutive_no_blip_polls, end_date, state, last_polled_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(condition_id) DO UPDATE SET
+            category=excluded.category,
+            question=excluded.question,
+            current_price=excluded.current_price,
+            rolling_volume_avg=excluded.rolling_volume_avg,
+            consecutive_no_blip_polls=excluded.consecutive_no_blip_polls,
+            end_date=excluded.end_date,
+            state=excluded.state,
+            last_polled_at=excluded.last_polled_at
+    ''', (condition_id, category, question, current_price, rolling_volume_avg,
+          consecutive_no_blip_polls, end_date, state, last_polled_at))
+    conn.commit()
 
 
 def insert_blip_event(
@@ -46,18 +56,16 @@ def insert_blip_event(
 ) -> None:
     """
     Insert a new blip event.
-
-    Args:
-        conn: Database connection.
-        condition_id: Market identifier.
-        detected_at: Blip detection timestamp (UTC).
-        trigger_type: "volume", "price", or "both".
-        volume_ratio: Current volume / rolling average.
-        price_delta: Absolute price change.
-        hours_to_close: Time to market resolution.
     """
-    # TODO: Implement insert
-    pass
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO blip_events (
+            condition_id, detected_at, trigger_type, volume_ratio, 
+            price_delta, hours_to_close
+        ) VALUES (?, ?, ?, ?, ?, ?)
+    ''', (condition_id, detected_at.isoformat(), trigger_type, volume_ratio, 
+          price_delta, hours_to_close))
+    conn.commit()
 
 
 def get_market_state(
@@ -66,16 +74,16 @@ def get_market_state(
 ) -> Optional[dict]:
     """
     Fetch current market state and metadata.
-
-    Args:
-        conn: Database connection.
-        condition_id: Market identifier.
-
-    Returns:
-        Market dict or None if not found.
     """
-    # TODO: Implement select
-    pass
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM markets WHERE condition_id = ?', (condition_id,))
+    row = cursor.fetchone()
+    
+    if not row:
+        return None
+        
+    cols = [col[0] for col in cursor.description]
+    return dict(zip(cols, row))
 
 
 def backfill_outcomes(
@@ -85,11 +93,9 @@ def backfill_outcomes(
 ) -> None:
     """
     Backfill outcome for all blip_events matching a resolved market.
-
-    Args:
-        conn: Database connection.
-        condition_id: Market identifier.
-        outcome: "Yes" or "No".
     """
-    # TODO: Implement UPDATE to set blip_events.outcome where market matches
-    pass
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE blip_events SET outcome = ? WHERE condition_id = ?
+    ''', (outcome, condition_id))
+    conn.commit()

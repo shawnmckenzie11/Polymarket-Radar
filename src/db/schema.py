@@ -23,10 +23,7 @@ def init_database(db_path: str = config.DB_PATH) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # TODO: Create all tables
-    # - markets (condition_id, category, question, current_price, end_date, state, last_polled_at, ...)
-    # - snapshots (market_id, polled_at, price, volume_24h, ...)
-    # - blip_events (market_id, detected_at, trigger_type, volume_ratio, price_delta, hours_to_close, outcome, ...)
+    create_tables(cursor)
 
     conn.commit()
     return conn
@@ -39,5 +36,29 @@ def create_tables(cursor: sqlite3.Cursor) -> None:
     Args:
         cursor: SQLite cursor.
     """
-    # TODO: Implement CREATE TABLE statements
-    pass
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS markets (
+            condition_id TEXT PRIMARY KEY,
+            category TEXT,
+            question TEXT,
+            current_price REAL,
+            rolling_volume_avg REAL,
+            end_date TEXT,
+            state TEXT,
+            consecutive_no_blip_polls INTEGER DEFAULT 0,
+            last_polled_at TEXT
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS blip_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            condition_id TEXT,
+            detected_at TEXT,
+            trigger_type TEXT,
+            volume_ratio REAL,
+            price_delta REAL,
+            hours_to_close REAL,
+            outcome TEXT
+        )
+    ''')

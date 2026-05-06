@@ -85,6 +85,13 @@ def poll_all_markets() -> None:
                     prev_volume_avg = db_state.get("rolling_volume_avg", 500.0) if db_state else 500.0
                     
                     volume_delta = float(market.get("volume24hr", 0.0))
+                    
+                    # Compute EWMA for volume if it's not a completely new market
+                    if db_state:
+                        new_volume_avg = (prev_volume_avg * 0.9) + (volume_delta * 0.1)
+                    else:
+                        new_volume_avg = volume_delta if volume_delta > 0 else 500.0
+                        
                     end_date = market.get("endDate", "")
                     
                     blip = detect_blip(
@@ -129,8 +136,11 @@ def poll_all_markets() -> None:
                         category=event.get("category", "Unknown"),
                         question=market.get("question", "Unknown"),
                         current_price=current_price,
+                        rolling_volume_avg=new_volume_avg,
+                        consecutive_no_blip_polls=consec_no_blip,
                         end_date=end_date,
-                        state=next_state
+                        state=next_state,
+                        last_polled_at=now.isoformat()
                     )
                     
                     if config.VERBOSE_POLLING:
