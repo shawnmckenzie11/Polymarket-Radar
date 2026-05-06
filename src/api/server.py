@@ -5,8 +5,9 @@ import sqlite3
 import os
 
 from src.db.schema import init_database
-from src.db.queries import get_active_markets, get_recent_blips
+from src.db.queries import get_active_markets, get_recent_blips, get_settings, update_setting
 import config
+from pydantic import BaseModel
 
 app = FastAPI(title="Polymarket Radar API")
 
@@ -39,6 +40,28 @@ def api_get_blips():
     try:
         blips = get_recent_blips(conn, limit=50)
         return {"status": "success", "data": blips}
+    finally:
+        conn.close()
+
+class SettingUpdate(BaseModel):
+    key: str
+    value: str
+
+@app.get("/api/settings")
+def api_get_settings():
+    conn = get_db()
+    try:
+        settings = get_settings(conn)
+        return {"status": "success", "data": settings}
+    finally:
+        conn.close()
+
+@app.post("/api/settings")
+def api_update_setting(update: SettingUpdate):
+    conn = get_db()
+    try:
+        update_setting(conn, update.key, update.value)
+        return {"status": "success"}
     finally:
         conn.close()
 

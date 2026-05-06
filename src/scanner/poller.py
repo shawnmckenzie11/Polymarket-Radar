@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 
 import config
 from src.db.schema import init_database
-from src.db.queries import get_market_state, upsert_market, insert_blip_event
+from src.db.queries import get_market_state, upsert_market, insert_blip_event, get_settings
 from src.scanner.detector import detect_blip
 from src.scanner.state import transition_state
 
@@ -39,8 +39,21 @@ def poll_all_markets() -> None:
     print("[poller] Starting market scan...")
     conn = init_database()
     
+    # Initialize default settings if missing
+    from src.db.queries import init_settings
+    default_settings = {
+        "VOLUME_SPIKE_MULTIPLIER": str(config.VOLUME_SPIKE_MULTIPLIER),
+        "PRICE_DELTA_THRESHOLD": str(config.PRICE_DELTA_THRESHOLD),
+        "BOTH_TRIGGERS_THRESHOLD": str(config.BOTH_TRIGGERS_THRESHOLD),
+        "WARM_TO_COLD_COOLDOWN_POLLS": str(config.WARM_TO_COLD_COOLDOWN_POLLS)
+    }
+    init_settings(conn, default_settings)
+    
     while True:
         try:
+            # 0. Fetch live settings
+            settings = get_settings(conn)
+            
             # 1. Fetch active markets from Gamma API
             markets_data = fetch_active_markets()
             
@@ -100,7 +113,8 @@ def poll_all_markets() -> None:
                         prev_price=prev_price,
                         volume_delta=volume_delta,
                         prev_volume_avg=prev_volume_avg,
-                        end_date=end_date
+                        end_date=end_date,
+                        settings=settings
                     )
                     
                     consec_no_blip = db_state.get("consecutive_no_blip_polls", 0) if db_state else 0
@@ -116,7 +130,8 @@ def poll_all_markets() -> None:
                         blip_detected=blip is not None,
                         consecutive_no_blip_polls=consec_no_blip,
                         market_closed=market_closed,
-                        blip=blip
+                        blip=blip,
+                        settings=settings
                     )
                     
                     if blip:

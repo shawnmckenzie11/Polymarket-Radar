@@ -3,54 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Polymarket Radar Live</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Quant Terminal Live</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="background-effects">
-        <div class="glow glow-1"></div>
-        <div class="glow glow-2"></div>
-    </div>
-
     <div class="app-container">
         <header class="header">
             <div class="logo-area">
-                <div class="radar-pulse"></div>
-                <h1>Polymarket Radar</h1>
+                <h1>QUANT // TERMINAL</h1>
             </div>
             <div class="status-badge">
                 <span class="status-dot"></span>
-                <span>Live Scanner Active</span>
+                <span>SYSTEM ONLINE</span>
             </div>
         </header>
 
         <main class="dashboard-grid">
+            <!-- Settings Panel -->
+            <section class="panel control-panel">
+                <div class="panel-header">
+                    <h2>[ CONFIGURATION ]</h2>
+                </div>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="vol-thresh">VOL MULTIPLIER (x):</label>
+                        <input type="number" id="vol-thresh" step="0.1" value="3.0">
+                    </div>
+                    <div class="form-group">
+                        <label for="price-thresh">PRICE DELTA (¢):</label>
+                        <input type="number" id="price-thresh" step="0.01" value="0.03">
+                    </div>
+                    <div class="form-group row">
+                        <label for="both-thresh">REQUIRE BOTH:</label>
+                        <input type="checkbox" id="both-thresh">
+                    </div>
+                    <button id="save-settings" class="btn">APPLY CONFIG</button>
+                    <div id="settings-status" class="status-msg"></div>
+                </div>
+            </section>
+
             <!-- Active Markets Panel -->
             <section class="panel markets-panel">
                 <div class="panel-header">
-                    <h2>🔥 Hot & Warm Markets</h2>
-                    <span class="badge" id="market-count">0</span>
+                    <h2>[ ACTIVE WATCHLIST ] <span class="badge" id="market-count">0</span></h2>
                 </div>
                 <div class="list-container" id="markets-list">
-                    <!-- Dynamic content -->
-                    <div class="loading">Scanning markets...</div>
+                    <div class="loading">AWAITING MARKET DATA...</div>
                 </div>
             </section>
 
             <!-- Blip Feed Panel -->
             <section class="panel blips-panel">
                 <div class="panel-header">
-                    <h2>⚡ Recent Blips</h2>
+                    <h2>[ SIGNAL FEED ]</h2>
                 </div>
                 <div class="list-container" id="blips-list">
-                    <!-- Dynamic content -->
-                    <div class="loading">Awaiting detection events...</div>
+                    <div class="loading">AWAITING SIGNALS...</div>
                 </div>
             </section>
         </main>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>

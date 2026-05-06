@@ -101,6 +101,37 @@ def backfill_outcomes(
     conn.commit()
 
 
+def get_settings(conn: sqlite3.Connection) -> dict:
+    """
+    Fetch all settings from the database.
+    """
+    cursor = conn.cursor()
+    cursor.execute('SELECT key, value FROM settings')
+    return {row[0]: row[1] for row in cursor.fetchall()}
+
+
+def update_setting(conn: sqlite3.Connection, key: str, value: str) -> None:
+    """
+    Update a setting in the database.
+    """
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO settings (key, value) VALUES (?, ?)
+        ON CONFLICT(key) DO UPDATE SET value=excluded.value
+    ''', (key, value))
+    conn.commit()
+
+
+def init_settings(conn: sqlite3.Connection, default_settings: dict) -> None:
+    """
+    Initialize settings with defaults if they don't exist.
+    """
+    existing = get_settings(conn)
+    for k, v in default_settings.items():
+        if k not in existing:
+            update_setting(conn, k, str(v))
+
+
 def get_active_markets(conn: sqlite3.Connection) -> list:
     """
     Fetch all WARM and HOT markets for the dashboard.

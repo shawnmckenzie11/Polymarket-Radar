@@ -19,6 +19,7 @@ def detect_blip(
     volume_delta: float,
     prev_volume_avg: float,
     end_date: str,
+    settings: dict = None,
 ) -> Optional[dict]:
     """
     Evaluate whether current market state crosses blip detection thresholds.
@@ -30,23 +31,29 @@ def detect_blip(
         volume_delta: Volume traded since last poll.
         prev_volume_avg: Rolling average volume for ratio baseline.
         end_date: ISO8601 market close time.
+        settings: Database settings dictionary.
 
     Returns:
         Blip dict with keys (trigger_type, price_delta, volume_ratio, hours_to_close)
         if thresholds crossed, None otherwise.
     """
+    settings = settings or {}
+    vol_multiplier = float(settings.get("VOLUME_SPIKE_MULTIPLIER", config.VOLUME_SPIKE_MULTIPLIER))
+    price_thresh = float(settings.get("PRICE_DELTA_THRESHOLD", config.PRICE_DELTA_THRESHOLD))
+    both_trig = settings.get("BOTH_TRIGGERS_THRESHOLD", str(config.BOTH_TRIGGERS_THRESHOLD)).lower() == "true"
+
     volume_ratio = volume_delta / prev_volume_avg if prev_volume_avg > 0 else 0.0
     price_delta = abs(current_price - prev_price)
     
-    vol_spike = volume_ratio >= config.VOLUME_SPIKE_MULTIPLIER
-    price_spike = price_delta >= config.PRICE_DELTA_THRESHOLD
+    vol_spike = volume_ratio >= vol_multiplier
+    price_spike = price_delta >= price_thresh
     
     trigger_type = None
     if vol_spike and price_spike:
         trigger_type = "both"
-    elif vol_spike and not config.BOTH_TRIGGERS_THRESHOLD:
+    elif vol_spike and not both_trig:
         trigger_type = "volume"
-    elif price_spike and not config.BOTH_TRIGGERS_THRESHOLD:
+    elif price_spike and not both_trig:
         trigger_type = "price"
         
     if trigger_type:

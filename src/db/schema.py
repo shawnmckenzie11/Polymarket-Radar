@@ -62,3 +62,10 @@ def create_tables(cursor: sqlite3.Cursor) -> None:
             outcome TEXT
         )
     ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )
+    ''')
