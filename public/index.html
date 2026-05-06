@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polymarket Radar Live</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-effects">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="header">
+            <div class="logo-area">
+                <div class="radar-pulse"></div>
+                <h1>Polymarket Radar</h1>
+            </div>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                <span>Live Scanner Active</span>
+            </div>
+        </header>
+
+        <main class="dashboard-grid">
+            <!-- Active Markets Panel -->
+            <section class="panel markets-panel">
+                <div class="panel-header">
+                    <h2>🔥 Hot & Warm Markets</h2>
+                    <span class="badge" id="market-count">0</span>
+                </div>
+                <div class="list-container" id="markets-list">
+                    <!-- Dynamic content -->
+                    <div class="loading">Scanning markets...</div>
+                </div>
+            </section>
+
+            <!-- Blip Feed Panel -->
+            <section class="panel blips-panel">
+                <div class="panel-header">
+                    <h2>⚡ Recent Blips</h2>
+                </div>
+                <div class="list-container" id="blips-list">
+                    <!-- Dynamic content -->
+                    <div class="loading">Awaiting detection events...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

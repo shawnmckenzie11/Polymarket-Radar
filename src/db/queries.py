@@ -99,3 +99,41 @@ def backfill_outcomes(
         UPDATE blip_events SET outcome = ? WHERE condition_id = ?
     ''', (outcome, condition_id))
     conn.commit()
+
+
+def get_active_markets(conn: sqlite3.Connection) -> list:
+    """
+    Fetch all WARM and HOT markets for the dashboard.
+    """
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT * FROM markets 
+        WHERE state IN ('WARM', 'HOT') 
+        ORDER BY state ASC, rolling_volume_avg DESC
+    ''')
+    rows = cursor.fetchall()
+    if not rows:
+        return []
+    
+    cols = [col[0] for col in cursor.description]
+    return [dict(zip(cols, row)) for row in rows]
+
+
+def get_recent_blips(conn: sqlite3.Connection, limit: int = 50) -> list:
+    """
+    Fetch recent blip events joined with market question.
+    """
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT b.*, m.question 
+        FROM blip_events b
+        LEFT JOIN markets m ON b.condition_id = m.condition_id
+        ORDER BY b.detected_at DESC
+        LIMIT ?
+    ''', (limit,))
+    rows = cursor.fetchall()
+    if not rows:
+        return []
+        
+    cols = [col[0] for col in cursor.description]
+    return [dict(zip(cols, row)) for row in rows]
