@@ -47,13 +47,13 @@ POLL_INTERVAL_HOT = 1 * 60  # 1 minute
 # ============================================================================
 
 # Volume-based trigger: volume_ratio = current_delta / rolling_avg
-VOLUME_SPIKE_MULTIPLIER = 5.0  # 5x rolling average triggers WARM
+VOLUME_SPIKE_MULTIPLIER = 3.0  # 3x rolling average triggers WARM
 
 # Price-based trigger: absolute delta since last poll
-PRICE_DELTA_THRESHOLD = 0.05  # 5% price move triggers WARM
+PRICE_DELTA_THRESHOLD = 0.03  # 3% price move triggers WARM
 
 # Dual trigger: both volume AND price spikes → HOT
-BOTH_TRIGGERS_THRESHOLD = True  # If True, both must spike simultaneously
+BOTH_TRIGGERS_THRESHOLD = False  # If True, both must spike simultaneously
 
 # Cooldown: drop back to WARM if triggers absent for N polls
 WARM_TO_COLD_COOLDOWN_POLLS = 2  # 2 consecutive polls without signal
@@ -69,7 +69,7 @@ DB_PATH = os.getenv("POLYMARKET_DB_PATH", "polymarket_radar.db")
 # ============================================================================
 
 # Set to True to print detailed polling info
-VERBOSE_POLLING = True
+VERBOSE_POLLING = False
 
 # ============================================================================
 # Phase 1: Analyzer Configuration
